@@ -60,8 +60,10 @@ const select = {
       thisProduct.data = data;
 
       thisProduct.renderInMenu();
+      thisProduct.getElements();
       thisProduct.initAccordion();
-
+      thisProduct.initOrderForm();
+      thisProduct.processOrder();
 
       console.log('new Product:', thisProduct);
 
@@ -80,14 +82,26 @@ const select = {
       menuContainer.appendChild(thisProduct.element);
     }
 
+    getElements(){
+     const thisProduct = this;
+
+     thisProduct.accordionTrigger = thisProduct.element.querySelector(select.menuProduct.clickable);
+     thisProduct.from = thisProduct.element.querySelector(select.menuProduct.form);
+     thisProduct.formInputs = thisProduct.from.querySelectorAll(select.all.formInputs);
+     thisProduct.cartButton = thisProduct.element.querySelector(select.menuProduct.cartButton);
+     thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
+      console.log('selectProduct', thisProduct);
+
+    }
+
     initAccordion(){
       const thisProduct = this;
 
       /*find clickable trigger (the element should react to clicking)*/
-      const clickableTrigger = thisProduct.element.querySelector(select.menuProduct.clickable);
+      
 
       /* START add event listener to clickable trigger on event click*/
-      clickableTrigger.addEventListener('click', function(event){
+      thisProduct.accordionTrigger.addEventListener('click', function(event){
 
         /*prevent default action for event */
         event.preventDefault();
@@ -107,6 +121,44 @@ const select = {
       });
 
     }
+
+    initOrderForm(){
+      const thisProduct = this;
+      console.log("initOrderForm()");
+
+      thisProduct.from.addEventListener('submit', function(event){
+        event.preventDefault();
+        thisProduct.processOrder();
+
+      });
+
+      for(let input of thisProduct.formInputs){
+        input.addEventListener('change', function(){
+          thisProduct.processOrder();
+        });
+      }
+
+      thisProduct.cartButton.addEventListener('click',function(event){
+        event.preventDefault();
+        thisProduct.processOrder();
+
+      });
+
+      
+
+      
+
+    }
+
+    processOrder(){
+      const thisProduct = this;
+      console.log("processOrder()");
+
+      const formData = utils.serializeFormToObject(thisProduct.form);
+      console.log('formData', formData);
+    }
+
+
   }
 
   const app = {
