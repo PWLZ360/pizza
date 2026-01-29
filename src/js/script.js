@@ -86,8 +86,8 @@ const select = {
      const thisProduct = this;
 
      thisProduct.accordionTrigger = thisProduct.element.querySelector(select.menuProduct.clickable);
-     thisProduct.from = thisProduct.element.querySelector(select.menuProduct.form);
-     thisProduct.formInputs = thisProduct.from.querySelectorAll(select.all.formInputs);
+     thisProduct.form = thisProduct.element.querySelector(select.menuProduct.form);
+     thisProduct.formInputs = thisProduct.form.querySelectorAll(select.all.formInputs);
      thisProduct.cartButton = thisProduct.element.querySelector(select.menuProduct.cartButton);
      thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
       console.log('selectProduct', thisProduct);
@@ -126,7 +126,7 @@ const select = {
       const thisProduct = this;
       console.log("initOrderForm()");
 
-      thisProduct.from.addEventListener('submit', function(event){
+      thisProduct.form.addEventListener('submit', function(event){
         event.preventDefault();
         thisProduct.processOrder();
 
@@ -155,7 +155,8 @@ const select = {
       console.log("processOrder()");
 
       const formData = utils.serializeFormToObject(thisProduct.form);
-      console.log('formData', formData);
+      console.log('formData:', formData);
+      
     }
 
 
