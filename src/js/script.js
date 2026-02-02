@@ -63,9 +63,10 @@ const select = {
       thisProduct.getElements();
       thisProduct.initAccordion();
       thisProduct.initOrderForm();
+      thisProduct.initAmountWidget();
       thisProduct.processOrder();
 
-      console.log('new Product:', thisProduct);
+      //console.log('new Product:', thisProduct);
 
     }
     renderInMenu(){
@@ -90,7 +91,10 @@ const select = {
      thisProduct.formInputs = thisProduct.form.querySelectorAll(select.all.formInputs);
      thisProduct.cartButton = thisProduct.element.querySelector(select.menuProduct.cartButton);
      thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
-      console.log('selectProduct', thisProduct);
+      //console.log('selectProduct', thisProduct);
+     thisProduct.imageWrapper = thisProduct.element.querySelector(select.menuProduct.imageWrapper);
+    
+     thisProduct.amountWidgetElem = thisProduct.element.querySelector(select.menuProduct.amountWidget);
 
     }
 
@@ -124,7 +128,7 @@ const select = {
 
     initOrderForm(){
       const thisProduct = this;
-      console.log("initOrderForm()");
+     // console.log("initOrderForm()");
 
       thisProduct.form.addEventListener('submit', function(event){
         event.preventDefault();
@@ -152,14 +156,122 @@ const select = {
 
     processOrder(){
       const thisProduct = this;
-      console.log("processOrder()");
-
+     
+      //convert form to object structure e.g {sauce: [tomato], toppings: ['olives', 'redPeppers']}
       const formData = utils.serializeFormToObject(thisProduct.form);
-      console.log('formData:', formData);
-      
+      //console.log('formData:', formData);
+
+      //set price to default price
+      let price = thisProduct.data.price;
+
+      //for every category(param)
+      for(let paramId in thisProduct.data.params){
+        //derermine param value e.g paramId = 'toppings', param = {label: 'Toppings, type:checkbox...}
+        const param = thisProduct.data.params[paramId];
+       //console.log(paramId, param);
+
+        //for every option in category
+        for(let optionId in param.options){
+          //determine options value e.g. optionsID = 'olives', options ={leabel: 'Olives', price: 2, defaulf: 'true'}
+          const option = param.options[optionId];
+         // console.log(optionId, option); 
+
+          const optionSelected = formData[paramId] && formData[paramId].includes(optionId);
+
+          if(optionSelected && !option.default){
+            price += option.price;
+          }
+          if(!optionSelected && option.default){
+            price -= option.price;
+          }
+          
+          const optionImage = thisProduct.imageWrapper.querySelector('.'+ paramId + '-' + optionId );
+
+          if(optionImage){
+            if(optionSelected){
+              optionImage.classList.add(classNames.menuProduct.imageVisible);
+            }else{
+              optionImage.classList.remove(classNames.menuProduct.imageVisible);
+            }
+          }
+        }
+
+        
+
+        
+      }
+
+      //update calculated price in the HTML
+      thisProduct.priceElem.innerHTML = price;
+
+    }
+
+    initAmountWidget(){
+      const thisProduct = this;
+
+      thisProduct.amountWidget = new AmountWidget(thisProduct.amountWidgetElem);
     }
 
 
+  }
+
+  class AmountWidget{
+    constructor(element){
+      const thisWidget = this;
+
+      console.log('AmountWidget:', thisWidget);
+      console.log('constructor arguments', element);
+
+
+      thisWidget.getElements(element);
+      thisWidget.setValue(thisWidget.input.value);
+      thisWidget.initActions();
+    }
+
+    getElements(element){
+      const thisWidget = this;
+
+      thisWidget.element = element;
+      thisWidget.input = thisWidget.element.querySelector(select.widgets.amount.input);
+      thisWidget.linkDecrease = thisWidget.element.querySelector(select.widgets.amount.linkDecrease);
+      thisWidget.linkIncrease = thisWidget.element.querySelector(select.widgets.amount.linkIncrease);
+    }
+
+    setValue(value){
+      const thisWidget = this;
+
+      const newValue =parseInt(value);
+
+      //TODO Add Validation
+      if(thisWidget.value != newValue && !isNaN(newValue) && newValue >= settings.amountWidget.defaultMin && newValue <= settings.amountWidget.defaultMax ){
+        thisWidget.value = newValue;
+      }
+
+      
+      thisWidget.input.value = thisWidget.value;
+    }
+
+    initActions(){
+      const thisWidget = this;
+
+      thisWidget.input.addEventListener('change', function(){
+        thisWidget.setValue(thisWidget.input.value);
+
+      });
+
+      thisWidget.linkDecrease.addEventListener('click', function(event){
+        event.preventDefault();
+        thisWidget.setValue(thisWidget.value-1);
+
+      });
+
+      thisWidget.linkIncrease.addEventListener('click', function (event) {
+        event.preventDefault();
+        thisWidget.setValue(thisWidget.value + 1);
+
+      });
+
+    }
   }
 
   const app = {
